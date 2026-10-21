@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <!-- SheetJS (xlsx) parser -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
@@ -39,45 +38,20 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0F172A;
-            color: #E2E8F0;
-        }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        .border-glow-blue:hover { border-color: #00F0FF; box-shadow: 0 0 15px rgba(0, 240, 255, 0.25); }
-        .border-glow-green:hover { border-color: #00FF66; box-shadow: 0 0 15px rgba(0, 255, 102, 0.25); }
-        .border-glow-red:hover { border-color: #FF3366; box-shadow: 0 0 15px rgba(255, 51, 102, 0.25); }
-        .border-glow-purple:hover { border-color: #9D00FF; box-shadow: 0 0 15px rgba(157, 0, 255, 0.25); }
-        .border-glow-yellow:hover { border-color: #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.25); }
-        
-        /* Custom scrollbars */
+        body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #E2E8F0; }
+        .glass-card { background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0F172A; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
 <body class="min-h-screen pb-10">
 
-    <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
     <!-- Top Navigation Bar -->
     <header class="glass-card sticky top-0 z-40 border-b border-slate-800 px-4 lg:px-8 py-3 mb-6 bg-slate-900/80">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            
-            <!-- Branding -->
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-neon-blue">
                     <i class="fa-solid fa-truck-fast"></i>
@@ -89,50 +63,9 @@
                     <p class="text-xs text-slate-400">Control & Analítica de Despachos</p>
                 </div>
             </div>
-
-            <!-- Controls Header -->
-            <div class="flex flex-wrap items-center justify-end gap-3 w-full md:w-auto">
-                
-                <!-- Active User Badge -->
-                <div id="user-badge" class="px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 text-xs flex items-center gap-2">
-                    <i class="fa-solid fa-user-circle text-cyan-400"></i>
-                    <span id="current-user-email" class="font-medium text-slate-200">admin@logistica.com</span>
-                    <span id="current-user-role" class="px-2 py-0.5 text-[10px] font-bold rounded bg-cyan-950 text-cyan-400 border border-cyan-500/30">ADMIN</span>
-                </div>
-
-                <!-- Role Switcher -->
-                <div class="flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs">
-                    <button id="role-admin-btn" onclick="switchRole('admin')" class="px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow-sm">
-                        <i class="fa-solid fa-user-gear"></i> Admin
-                    </button>
-                    <button id="role-viewer-btn" onclick="switchRole('viewer')" class="px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 text-slate-400 hover:text-white">
-                        <i class="fa-solid fa-eye"></i> Lector
-                    </button>
-                </div>
-
-                <!-- Admin Pending Access Requests Button -->
-                <button id="pending-requests-btn" onclick="openAuthPanelModal()" class="relative px-3 py-1.5 rounded-xl bg-amber-950/40 border border-amber-500/40 hover:bg-amber-900/60 text-amber-300 transition-all text-xs font-semibold flex items-center gap-2">
-                    <i class="fa-solid fa-user-clock"></i>
-                    <span>Autorizaciones</span>
-                    <span id="pending-badge" class="hidden px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">0</span>
-                </button>
-
-                <!-- Data Upload Button (Admin Only) -->
-                <div id="admin-actions" class="flex items-center gap-2">
-                    <label class="px-3 py-1.5 rounded-xl border border-cyan-500/40 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 transition-all text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-neon-blue/10">
-                        <i class="fa-solid fa-file-excel text-emerald-400"></i>
-                        <span>Cargar .XLSX/.CSV</span>
-                        <input type="file" id="file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileSelect(event)">
-                    </label>
-                    <button onclick="resetToDefaultData()" title="Restablecer datos por defecto" class="p-2 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 transition-all text-xs">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                </div>
-
-                <!-- Share Modal Trigger -->
-                <button onclick="openShareModal()" class="px-3 py-1.5 rounded-xl bg-purple-950/50 border border-purple-500/40 hover:bg-purple-900/60 text-purple-300 transition-all text-xs font-semibold flex items-center gap-2">
-                    <i class="fa-solid fa-share-nodes"></i>
-                    <span>Compartir</span>
+            <div class="flex items-center gap-3">
+                <button onclick="loadDataFromGitHub()" class="px-3 py-1.5 rounded-xl border border-cyan-500/40 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 text-xs font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Recargar Datos GitHub
                 </button>
             </div>
         </div>
@@ -141,816 +74,140 @@
     <!-- Main Content Container -->
     <main class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
 
-        <!-- Banner / Status Bar -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl glass-card border border-slate-800">
+        <div class="flex items-center justify-between p-4 rounded-2xl glass-card border border-slate-800">
             <div class="flex items-center gap-3">
                 <div class="p-2.5 rounded-xl bg-slate-800 text-slate-300">
                     <i class="fa-solid fa-database text-cyan-400"></i>
                 </div>
                 <div>
                     <div class="text-xs text-slate-400">Origen de Datos Actual:</div>
-                    <div id="data-source-name" class="text-sm font-semibold text-white flex items-center gap-2">
-                        Dataset Precargado (PROMEDIO.xlsx)
-                        <span id="data-count-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-slate-800 text-cyan-300 border border-slate-700">20 Registros</span>
-                    </div>
+                    <div id="data-source-name" class="text-sm font-semibold text-white">Conectando a GitHub...</div>
                 </div>
             </div>
-
-            <!-- Global Date Filter Bar -->
-            <div class="flex flex-wrap items-center gap-2 text-xs w-full sm:w-auto">
-                <span class="text-slate-400"><i class="fa-solid fa-calendar-days mr-1"></i> Rango:</span>
-                <input type="date" id="filter-date-start" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-cyan-500">
-                <span class="text-slate-500">a</span>
-                <input type="date" id="filter-date-end" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-cyan-500">
-                <button onclick="clearDateFilter()" class="px-2 py-1 rounded bg-slate-800 text-slate-400 hover:text-white transition-all text-xs">
-                    Limpiar
-                </button>
-            </div>
+            <div id="data-count-badge" class="px-3 py-1 text-xs rounded-full bg-slate-800 text-cyan-300 border border-slate-700">0 Registros</div>
         </div>
 
         <!-- KPI Head-Up Display Top Panel -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            
-            <!-- KPI 1: Demanda Total -->
-            <div class="glass-card p-4 rounded-2xl border-glow-blue">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Demanda</span>
-                    <div class="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-neonBlue">
-                        <i class="fa-solid fa-boxes-packing"></i>
-                    </div>
-                </div>
-                <div id="kpi-demanda" class="text-2xl font-bold text-white tracking-tight">0</div>
-                <div class="mt-2 text-[11px] text-cyan-400/80 flex items-center gap-1">
-                    <i class="fa-solid fa-bullseye"></i> Goal requerido acumulado
-                </div>
+            <div class="glass-card p-4 rounded-2xl">
+                <span class="text-xs font-semibold text-slate-400 uppercase">Total Demanda</span>
+                <div id="kpi-demanda" class="text-2xl font-bold text-white mt-2">0</div>
             </div>
-
-            <!-- KPI 2: Total Despachado -->
-            <div class="glass-card p-4 rounded-2xl border-glow-green">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Despachado</span>
-                    <div class="w-8 h-8 rounded-lg bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-neonGreen">
-                        <i class="fa-solid fa-truck-ramp-box"></i>
-                    </div>
-                </div>
-                <div id="kpi-despacho" class="text-2xl font-bold text-white tracking-tight">0</div>
-                <div class="mt-2 text-[11px] text-emerald-400/80 flex items-center gap-1">
-                    <i class="fa-solid fa-circle-check"></i> Unidades efectivas entregadas
-                </div>
+            <div class="glass-card p-4 rounded-2xl">
+                <span class="text-xs font-semibold text-slate-400 uppercase">Total Despachado</span>
+                <div id="kpi-despacho" class="text-2xl font-bold text-white mt-2">0</div>
             </div>
-
-            <!-- KPI 3: % Atención Global -->
-            <div class="glass-card p-4 rounded-2xl border-glow-purple">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">% Atención Global</span>
-                    <div id="kpi-atencion-icon-bg" class="w-8 h-8 rounded-lg bg-purple-950/60 border border-purple-500/30 flex items-center justify-center text-neonPurple">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <div id="kpi-atencion" class="text-2xl font-bold text-white tracking-tight">0%</div>
-                    <span id="kpi-atencion-badge" class="text-[10px] px-2 py-0.5 rounded-full font-semibold border">Normal</span>
-                </div>
-                <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
-                    <span>Target: &ge; 80%</span>
-                </div>
+            <div class="glass-card p-4 rounded-2xl">
+                <span class="text-xs font-semibold text-slate-400 uppercase">% Cumplimiento Prom.</span>
+                <div id="kpi-atencion" class="text-2xl font-bold text-white mt-2">0%</div>
             </div>
-
-            <!-- KPI 4: Diferencia Pendiente -->
-            <div class="glass-card p-4 rounded-2xl border-glow-red">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Diferencia Pendiente</span>
-                    <div class="w-8 h-8 rounded-lg bg-rose-950/60 border border-rose-500/30 flex items-center justify-center text-neonRed">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
-                </div>
-                <div id="kpi-diferencia" class="text-2xl font-bold text-white tracking-tight">0</div>
-                <div class="mt-2 text-[11px] text-rose-400/80 flex items-center gap-1">
-                    <i class="fa-solid fa-arrow-trend-down"></i> Brecha acumulada no cubierta
-                </div>
+            <div class="glass-card p-4 rounded-2xl">
+                <span class="text-xs font-semibold text-slate-400 uppercase">Diferencia Pendiente</span>
+                <div id="kpi-diferencia" class="text-2xl font-bold text-white mt-2">0</div>
             </div>
-
-            <!-- KPI 5: Promedio Tiendas por Día -->
-            <div class="glass-card p-4 rounded-2xl border-glow-yellow">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Prom. Tiendas / Día</span>
-                    <div class="w-8 h-8 rounded-lg bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-neonYellow">
-                        <i class="fa-solid fa-store"></i>
-                    </div>
-                </div>
-                <div id="kpi-tiendas" class="text-2xl font-bold text-white tracking-tight">0</div>
-                <div class="mt-2 text-[11px] text-amber-400/80 flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot"></i> Cobertura operativa promedio
-                </div>
+            <div class="glass-card p-4 rounded-2xl">
+                <span class="text-xs font-semibold text-slate-400 uppercase">Prom. Tiendas / Día</span>
+                <div id="kpi-tiendas" class="text-2xl font-bold text-white mt-2">0</div>
             </div>
         </div>
 
-        <!-- GRÁFICOS Layout Grid -->
+        <!-- GRÁFICOS -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Gráfico 1: Barras Compuestas + Línea (Demanda vs Despacho vs %Atención) -->
-            <div class="glass-card p-5 rounded-2xl lg:col-span-2 border-glow-blue flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h2 class="font-bold text-white text-base flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-neonBlue"></span>
-                            Demanda vs Despacho y % de Atención Diaria
-                        </h2>
-                        <p class="text-xs text-slate-400">Comparativa directa de volumen solicitado contra despachado y eficiencia</p>
-                    </div>
-                    <span class="text-xs text-slate-500 bg-slate-800/80 px-2 py-1 rounded">Eje Dual</span>
-                </div>
-                <div class="h-72 relative w-full">
-                    <canvas id="chart-demanda-despacho"></canvas>
-                </div>
+            <div class="glass-card p-5 rounded-2xl lg:col-span-2">
+                <h2 class="font-bold text-white text-base mb-4">Demanda vs Despachada y % Cumplimiento</h2>
+                <div class="h-72 relative"><canvas id="chart-demanda-despacho"></canvas></div>
             </div>
-
-            <!-- Gráfico 5: Gauge / Semicírculo de Cumplimiento General -->
-            <div class="glass-card p-5 rounded-2xl border-glow-purple flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-2">
-                    <div>
-                        <h2 class="font-bold text-white text-base flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-neonPurple"></span>
-                            Cumplimiento Global
-                        </h2>
-                        <p class="text-xs text-slate-400">Desempeño actual vs Meta (80%)</p>
-                    </div>
-                </div>
-                <div class="h-56 relative w-full flex items-center justify-center">
+            <div class="glass-card p-5 rounded-2xl flex flex-col justify-between">
+                <h2 class="font-bold text-white text-base mb-2">Cumplimiento Global</h2>
+                <div class="h-56 relative flex items-center justify-center">
                     <canvas id="chart-gauge"></canvas>
                     <div class="absolute top-[60%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
                         <div id="gauge-percent-text" class="text-3xl font-black text-white">0%</div>
-                        <div id="gauge-status-text" class="text-xs font-semibold text-slate-400">Calculando...</div>
-                    </div>
-                </div>
-                <div class="flex justify-around text-center text-xs pt-2 border-t border-slate-800">
-                    <div>
-                        <div class="text-slate-400">Meta Objetivo</div>
-                        <div class="font-bold text-emerald-400">80.00%</div>
-                    </div>
-                    <div>
-                        <div class="text-slate-400">Estado Meta</div>
-                        <div id="gauge-target-delta" class="font-bold text-rose-400">0.00%</div>
                     </div>
                 </div>
             </div>
-
-            <!-- Gráfico 2: Áreas Apiladas (Análisis de la Brecha) -->
-            <div class="glass-card p-5 rounded-2xl border-glow-green flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h2 class="font-bold text-white text-base flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-neonGreen"></span>
-                            Análisis de Brecha Apilada
-                        </h2>
-                        <p class="text-xs text-slate-400">Proporción de unidades entregadas vs faltantes</p>
-                    </div>
-                </div>
-                <div class="h-64 relative w-full">
-                    <canvas id="chart-areas-apiladas"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico 3: Dispersión Scatter (% Atención vs Tiendas Atendidas) -->
-            <div class="glass-card p-5 rounded-2xl border-glow-yellow flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h2 class="font-bold text-white text-base flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-neonYellow"></span>
-                            Scatter: Tiendas vs % Atención
-                        </h2>
-                        <p class="text-xs text-slate-400">Relación de volumen de tiendas vs efectividad de entrega</p>
-                    </div>
-                </div>
-                <div class="h-64 relative w-full">
-                    <canvas id="chart-scatter"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico 4: Tendencia de Cobertura de Tiendas -->
-            <div class="glass-card p-5 rounded-2xl border-glow-yellow flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h2 class="font-bold text-white text-base flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-neonYellow"></span>
-                            Tendencia de Cobertura
-                        </h2>
-                        <p class="text-xs text-slate-400">Tiendas atendidas por día con línea de promedio global</p>
-                    </div>
-                </div>
-                <div class="h-64 relative w-full">
-                    <canvas id="chart-tendencia-tiendas"></canvas>
-                </div>
-            </div>
-
         </div>
 
-        <!-- Tabla Dinámica Interactiva -->
+        <!-- Tabla de Datos -->
         <div class="glass-card p-5 rounded-2xl border border-slate-800">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                <div>
-                    <h2 class="font-bold text-white text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-table text-cyan-400"></i>
-                        Detalle de Registros Operativos
-                    </h2>
-                    <p class="text-xs text-slate-400">Búsqueda rápida, ordenamiento y resaltado automático de bajo rendimiento (&lt;50%)</p>
-                </div>
-
-                <!-- Table Actions & Search -->
-                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <div class="relative w-full sm:w-64">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-                        <input type="text" id="table-search" oninput="renderTable()" placeholder="Buscar por fecha..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-8 pr-3 py-2 focus:outline-none focus:border-cyan-500">
-                    </div>
-                    <button onclick="exportTableToCSV()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all">
-                        <i class="fa-solid fa-download text-emerald-400"></i> Exportar
-                    </button>
-                </div>
-            </div>
-
-            <!-- Table Container -->
+            <h2 class="font-bold text-white text-lg mb-4"><i class="fa-solid fa-table text-cyan-400 mr-2"></i>Detalle de Registros Operativos</h2>
             <div class="overflow-x-auto rounded-xl border border-slate-800">
                 <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-900/90 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+                    <thead class="bg-slate-900 text-slate-400 font-semibold uppercase border-b border-slate-800">
                         <tr>
-                            <th scope="col" onclick="sortTable('fecha')" class="px-4 py-3 cursor-pointer hover:text-cyan-400 transition-colors">
-                                Fecha <i class="fa-solid fa-sort text-[10px] ml-1"></i>
-                            </th>
-                            <th scope="col" onclick="sortTable('demanda')" class="px-4 py-3 cursor-pointer hover:text-cyan-400 transition-colors text-right">
-                                Demanda <i class="fa-solid fa-sort text-[10px] ml-1"></i>
-                            </th>
-                            <th scope="col" onclick="sortTable('despacho')" class="px-4 py-3 cursor-pointer hover:text-cyan-400 transition-colors text-right">
-                                Despacho <i class="fa-solid fa-sort text-[10px] ml-1"></i>
-                            </th>
-                            <th scope="col" onclick="sortTable('diferencia')" class="px-4 py-3 cursor-pointer hover:text-cyan-400 transition-colors text-right">
-                                Diferencia <i class="fa-solid fa-sort text-[10px] ml-1"></i>
-                            </th>
-                            <th scope="col" onclick="sortTable('atencion')" class="px-4 py-3 cursor-pointer hover:text-cyan-400 transition-colors text-right">
-                                % Atención <i class="fa-solid fa-sort text-[10px] ml-1"></i>
-                            </th>
-                            <th scope="col" onclick="sortTable('tiendas')" class="px-4 py-3 cursor-pointer hover:text-cyan-400 transition-colors text-right">
-                                Tiendas Atendidas <i class="fa-solid fa-sort text-[10px] ml-1"></i>
-                            </th>
-                            <th scope="col" class="px-4 py-3 text-center">Estado</th>
+                            <th class="px-4 py-3">Fecha</th>
+                            <th class="px-4 py-3 text-right">Demanda</th>
+                            <th class="px-4 py-3 text-right">Despachada</th>
+                            <th class="px-4 py-3 text-right">Diferencia</th>
+                            <th class="px-4 py-3 text-right">% Cumplimiento</th>
+                            <th class="px-4 py-3 text-right">Tiendas</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-slate-800/60 font-mono">
-                        <!-- Dynamic Rows Injected Here -->
-                    </tbody>
+                    <tbody id="table-body" class="divide-y divide-slate-800 font-mono"></tbody>
                 </table>
             </div>
-
-            <!-- Table Pagination / Status -->
-            <div class="flex justify-between items-center mt-3 text-xs text-slate-500">
-                <span id="table-record-count">Mostrando 0 registros</span>
-                <span class="flex items-center gap-3">
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500/30 border border-rose-500 inline-block"></span> Crítico (&lt;50%)</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500/30 border border-amber-500 inline-block"></span> Regular (50%-70%)</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500/30 border border-emerald-500 inline-block"></span> Óptimo (&gt;70%)</span>
-                </span>
-            </div>
         </div>
-
     </main>
-
-    <!-- Modal 1: Request Access / Enter Email Modal (For Unauthorized Readers) -->
-    <div id="request-access-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-cyan-500/30 shadow-2xl relative">
-            <div class="w-12 h-12 rounded-2xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 flex items-center justify-center text-xl mb-4 mx-auto">
-                <i class="fa-solid fa-user-lock"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white text-center mb-1">Acceso a Dashboard LOGIX PRO</h3>
-            <p class="text-xs text-slate-400 text-center mb-6">Ingresa tu correo electrónico corporativo para acceder o solicitar autorización al usuario principal.</p>
-
-            <form onsubmit="handleAccessSubmission(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Correo Electrónico Corporativo</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-500 text-xs"></i>
-                        <input type="email" id="request-email-input" required placeholder="tu.nombre@empresa.com" class="w-full bg-slate-900 border border-slate-700 focus:border-cyan-500 text-slate-200 text-xs rounded-xl pl-9 pr-3 py-2.5 focus:outline-none transition-all">
-                    </div>
-                    <span id="request-email-error" class="text-[11px] text-rose-400 mt-1 hidden block">Por favor ingresa una dirección de correo válida.</span>
-                </div>
-
-                <div class="pt-2 flex flex-col gap-2">
-                    <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-400 text-slate-950 font-bold rounded-xl text-xs hover:opacity-90 transition-all shadow-neon-blue">
-                        Ingresar / Solicitar Autorización
-                    </button>
-                    <button type="button" onclick="closeRequestAccessModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs transition-all">
-                        Volver a Modo Admin
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal 2: Admin Pending Authorizations Panel Modal ("La Principal") -->
-    <div id="auth-panel-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="glass-card max-w-2xl w-full rounded-2xl p-6 border border-amber-500/30 shadow-2xl relative">
-            <button onclick="closeAuthPanelModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            
-            <div class="flex items-center gap-3 mb-1">
-                <div class="p-2 rounded-xl bg-amber-950/80 text-amber-400 border border-amber-500/30">
-                    <i class="fa-solid fa-user-shield text-lg"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-white">Panel de Autorizaciones ("La Principal")</h3>
-                    <p class="text-xs text-slate-400">Gestiona las solicitudes de acceso por correo de nuevos lectores.</p>
-                </div>
-            </div>
-
-            <div class="mt-6 space-y-4">
-                <div class="flex justify-between items-center text-xs font-semibold text-slate-300 border-b border-slate-800 pb-2">
-                    <span>Solicitudes Recibidas (<span id="pending-count-text">0</span>)</span>
-                    <button onclick="clearAllPendingRequests()" class="text-rose-400 hover:text-rose-300 text-[11px]"><i class="fa-solid fa-trash mr-1"></i>Limpiar Solicitudes</button>
-                </div>
-
-                <!-- Pending Requests Table / List -->
-                <div class="max-h-60 overflow-y-auto space-y-2 pr-1" id="pending-requests-list">
-                    <!-- Dynamic Rows Injected Here -->
-                </div>
-
-                <!-- Authorized Users Section -->
-                <div class="pt-4 border-t border-slate-800">
-                    <h4 class="text-xs font-semibold text-slate-400 mb-2">Usuarios Autorizados Activos:</h4>
-                    <div id="authorized-users-list" class="max-h-36 overflow-y-auto space-y-2 pr-1 text-xs">
-                        <!-- Dynamic Active Users Injected Here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Share / Permissions Modal -->
-    <div id="share-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-slate-700 shadow-2xl relative">
-            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-1">
-                <i class="fa-solid fa-user-shield text-purple-400"></i> Compartir Dashboard
-            </h3>
-            <p class="text-xs text-slate-400 mb-4">Gestiona acceso para otros usuarios autorizados en tiempo real.</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Enlace de acceso directo (Vista Lector)</label>
-                    <div class="flex gap-2">
-                        <input type="text" readonly id="share-link-input" value="https://logixpro.app/dashboard/view?role=viewer" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-cyan-300">
-                        <button onclick="copyShareLink()" class="px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold">
-                            Copiar
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Invitar usuario por email (Autorización Directa)</label>
-                    <div class="flex gap-2">
-                        <input type="email" id="invite-email-input" placeholder="usuario@empresa.com" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200">
-                        <button onclick="sendDirectInvitation()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded-xl text-xs">
-                            Invitar
-                        </button>
-                    </div>
-                </div>
-
-                <div class="pt-2 border-t border-slate-800">
-                    <span class="text-xs font-semibold text-slate-400 block mb-2">Resumen de Permisos Activos:</span>
-                    <div id="share-modal-users-list" class="space-y-2 text-xs max-h-36 overflow-y-auto">
-                        <!-- Dynamic Content Injected -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Default initial Dataset matching PROMEDIO.xlsx specification
-        const DEFAULT_DATASET = [
-            { fecha: "01/10/2026", demanda: 39630, despacho: 18238, diferencia: 21392, atencion: 0.4602, tiendas: 58 },
-            { fecha: "02/10/2026", demanda: 42100, despacho: 31575, diferencia: 10525, atencion: 0.7500, tiendas: 64 },
-            { fecha: "03/10/2026", demanda: 38500, despacho: 32725, diferencia: 5775,  atencion: 0.8500, tiendas: 62 },
-            { fecha: "04/10/2026", demanda: 45000, despacho: 20250, diferencia: 24750, atencion: 0.4500, tiendas: 50 },
-            { fecha: "05/10/2026", demanda: 41200, despacho: 35020, diferencia: 6180,  atencion: 0.8500, tiendas: 68 },
-            { fecha: "06/10/2026", demanda: 37800, despacho: 34020, diferencia: 3780,  atencion: 0.9000, tiendas: 70 },
-            { fecha: "07/10/2026", demanda: 44000, despacho: 22000, diferencia: 22000, atencion: 0.5000, tiendas: 52 },
-            { fecha: "08/10/2026", demanda: 40500, despacho: 32400, diferencia: 8100,  atencion: 0.8000, tiendas: 65 },
-            { fecha: "09/10/2026", demanda: 43200, despacho: 38880, diferencia: 4320,  atencion: 0.9000, tiendas: 72 },
-            { fecha: "10/10/2026", demanda: 46000, despacho: 18400, diferencia: 27600, atencion: 0.4000, tiendas: 45 },
-            { fecha: "11/10/2026", demanda: 39000, despacho: 31200, diferencia: 7800,  atencion: 0.8000, tiendas: 60 },
-            { fecha: "12/10/2026", demanda: 41500, despacho: 36520, diferencia: 4980,  atencion: 0.8800, tiendas: 67 },
-            { fecha: "13/10/2026", demanda: 38000, despacho: 19000, diferencia: 19000, atencion: 0.5000, tiendas: 48 },
-            { fecha: "14/10/2026", demanda: 42800, despacho: 36380, diferencia: 6420,  atencion: 0.8500, tiendas: 66 },
-            { fecha: "15/10/2026", demanda: 45500, despacho: 40950, diferencia: 4550,  atencion: 0.9000, tiendas: 75 },
-            { fecha: "16/10/2026", demanda: 39800, despacho: 17910, diferencia: 21890, atencion: 0.4500, tiendas: 46 },
-            { fecha: "17/10/2026", demanda: 40200, despacho: 32160, diferencia: 8040,  atencion: 0.8000, tiendas: 61 },
-            { fecha: "18/10/2026", demanda: 43800, despacho: 39420, diferencia: 4380,  atencion: 0.9000, tiendas: 71 },
-            { fecha: "19/10/2026", demanda: 41000, despacho: 20500, diferencia: 20500, atencion: 0.5000, tiendas: 53 },
-            { fecha: "20/10/2026", demanda: 44500, despacho: 37825, diferencia: 6675,  atencion: 0.8500, tiendas: 69 }
-        ];
+        const CSV_DATA_URL = './Base_Datos_Demanda_Limpia.csv';
+        let rawData = [], filteredData = [];
+        let chartDemandaDespacho, chartGauge;
 
-        // Access & Authorization State Storage (Persisted in localStorage)
-        const ADMIN_EMAIL = 'admin@logistica.com';
-        
-        // Initial default authorized list
-        let authorizedEmails = JSON.parse(localStorage.getItem('logix_authorized_emails')) || [
-            'admin@logistica.com',
-            'gerencia@logistica.com'
-        ];
-
-        // Initial default pending requests list
-        let pendingRequests = JSON.parse(localStorage.getItem('logix_pending_requests')) || [
-            { email: 'analista.logistica@empresa.com', timestamp: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) }
-        ];
-
-        let currentUser = {
-            email: ADMIN_EMAIL,
-            role: 'admin', // 'admin' | 'viewer'
-            authorized: true
-        };
-
-        // State Management
-        let rawData = JSON.parse(JSON.stringify(DEFAULT_DATASET));
-        let filteredData = [...rawData];
-        let sortCol = 'fecha';
-        let sortAsc = true;
-
-        // Chart References
-        let chartDemandaDespacho, chartGauge, chartAreas, chartScatter, chartTendencia;
-
-        // Colors
-        const NEON_BLUE = '#00F0FF';
-        const NEON_GREEN = '#00FF66';
-        const NEON_RED = '#FF3366';
-        const NEON_PURPLE = '#9D00FF';
-        const NEON_YELLOW = '#FFD700';
-
-        // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
             initCharts();
-            updateDashboard();
-            updatePendingBadge();
-
-            // Check URL parameters for share links
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('role') === 'viewer') {
-                switchRole('viewer');
-            }
+            loadDataFromGitHub();
         });
 
-        function saveAccessState() {
-            localStorage.setItem('logix_authorized_emails', JSON.stringify(authorizedEmails));
-            localStorage.setItem('logix_pending_requests', JSON.stringify(pendingRequests));
-            updatePendingBadge();
-        }
-
-        // Role Switcher & Authorization Access Check
-        function switchRole(role) {
-            if (role === 'viewer') {
-                // Check if current reader email is authorized
-                if (currentUser.role === 'viewer' && currentUser.authorized) {
-                    setRole('viewer');
-                    return;
-                }
+        async function loadDataFromGitHub() {
+            try {
+                showToast('Cargando base de datos desde GitHub...', 'info');
+                const response = await fetch(CSV_DATA_URL + '?t=' + new Date().getTime()); // Evita caché de GitHub
+                if (!response.ok) throw new Error('No se encontró el archivo CSV');
                 
-                // Prompt request modal for access if not currently authorized as viewer
-                openRequestAccessModal();
-            } else {
-                currentUser = {
-                    email: ADMIN_EMAIL,
-                    role: 'admin',
-                    authorized: true
-                };
-                setRole('admin');
-            }
-        }
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
 
-        function setRole(role) {
-            currentUser.role = role;
-            const adminBtn = document.getElementById('role-admin-btn');
-            const viewerBtn = document.getElementById('role-viewer-btn');
-            const adminActions = document.getElementById('admin-actions');
-            const pendingBtn = document.getElementById('pending-requests-btn');
-            const userEmailElem = document.getElementById('current-user-email');
-            const userRoleElem = document.getElementById('current-user-role');
+                const parsedData = [];
+                for (let i = 1; i < json.length; i++) {
+                    const row = json[i];
+                    if (!row || row.length < 2) continue;
 
-            userEmailElem.innerText = currentUser.email;
-
-            if (role === 'admin') {
-                adminBtn.className = "px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow-sm";
-                viewerBtn.className = "px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 text-slate-400 hover:text-white";
-                adminActions.style.display = 'flex';
-                pendingBtn.style.display = 'flex';
-
-                userRoleElem.innerText = "ADMIN";
-                userRoleElem.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-cyan-950 text-cyan-400 border border-cyan-500/30";
-
-                showToast('Modo Administrador Activo ("La Principal")', 'info');
-            } else {
-                viewerBtn.className = "px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 bg-purple-600 text-white shadow-sm";
-                adminBtn.className = "px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 text-slate-400 hover:text-white";
-                adminActions.style.display = 'none';
-                pendingBtn.style.display = 'none';
-
-                userRoleElem.innerText = "LECTOR AUTORIZADO";
-                userRoleElem.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-purple-950 text-purple-300 border border-purple-500/30";
-
-                showToast(`Acceso Autorizado como Lector: ${currentUser.email}`, 'success');
-            }
-        }
-
-        // Request Access Flow Logic
-        function openRequestAccessModal() {
-            document.getElementById('request-access-modal').classList.remove('hidden');
-        }
-
-        function closeRequestAccessModal() {
-            document.getElementById('request-access-modal').classList.add('hidden');
-            document.getElementById('request-email-error').classList.add('hidden');
-        }
-
-        function handleAccessSubmission(evt) {
-            evt.preventDefault();
-            const emailInput = document.getElementById('request-email-input');
-            const email = emailInput.value.trim().toLowerCase();
-            const errorElem = document.getElementById('request-email-error');
-
-            if (!email || !email.includes('@') || !email.includes('.')) {
-                errorElem.innerText = "Por favor ingresa un correo corporativo válido.";
-                errorElem.classList.remove('hidden');
-                return;
-            }
-
-            errorElem.classList.add('hidden');
-
-            // 1. Check if email is already authorized
-            if (authorizedEmails.includes(email)) {
-                currentUser = {
-                    email: email,
-                    role: 'viewer',
-                    authorized: true
-                };
-                closeRequestAccessModal();
-                setRole('viewer');
-                return;
-            }
-
-            // 2. Check if request is already pending
-            const isPending = pendingRequests.some(req => req.email === email);
-            if (isPending) {
-                showToast(`La solicitud para ${email} está pendiente de aprobación por el Administrador`, 'warning');
-                closeRequestAccessModal();
-                return;
-            }
-
-            // 3. Register new pending request
-            const timestamp = new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
-            pendingRequests.push({ email, timestamp });
-            saveAccessState();
-
-            // Simulate real-time notification to Principal / Admin
-            showToast(`Solicitud enviada a "La Principal". Recibirás autorización por correo.`, 'info');
-            
-            // Generate system alert toast for Admin
-            setTimeout(() => {
-                showToast(`🔔 [Alerta Administrador] Nueva solicitud de acceso recibida: ${email}`, 'warning');
-            }, 1000);
-
-            emailInput.value = '';
-            closeRequestAccessModal();
-        }
-
-        // Authorization Panel Modal ("La Principal") Controls
-        function openAuthPanelModal() {
-            renderAuthPanel();
-            document.getElementById('auth-panel-modal').classList.remove('hidden');
-        }
-
-        function closeAuthPanelModal() {
-            document.getElementById('auth-panel-modal').classList.add('hidden');
-        }
-
-        function updatePendingBadge() {
-            const badge = document.getElementById('pending-badge');
-            if (pendingRequests.length > 0) {
-                badge.innerText = pendingRequests.length;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        function renderAuthPanel() {
-            const pendingContainer = document.getElementById('pending-requests-list');
-            const activeContainer = document.getElementById('authorized-users-list');
-            document.getElementById('pending-count-text').innerText = pendingRequests.length;
-
-            // Render Pending Requests
-            if (pendingRequests.length === 0) {
-                pendingContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-500 bg-slate-900/40 rounded-xl">No hay solicitudes pendientes en este momento.</div>`;
-            } else {
-                pendingContainer.innerHTML = pendingRequests.map(req => `
-                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all">
-                        <div>
-                            <div class="text-xs font-semibold text-slate-200 flex items-center gap-2">
-                                <i class="fa-solid fa-clock text-amber-400"></i> ${req.email}
-                            </div>
-                            <div class="text-[10px] text-slate-500 mt-0.5">Solicitado: ${req.timestamp}</div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="approveAccess('${req.email}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-lg text-xs transition-all flex items-center gap-1 shadow-sm">
-                                <i class="fa-solid fa-check"></i> Autorizar
-                            </button>
-                            <button onclick="denyAccess('${req.email}')" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 rounded-lg text-xs transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-xmark"></i> Denegar
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            // Render Authorized Active Users
-            activeContainer.innerHTML = authorizedEmails.map(email => `
-                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-slate-800">
-                    <span class="text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check ${email === ADMIN_EMAIL ? 'text-cyan-400' : 'text-purple-400'}"></i>
-                        ${email}
-                    </span>
-                    ${email === ADMIN_EMAIL 
-                        ? `<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 text-[10px] font-bold border border-cyan-500/30">Propietario</span>`
-                        : `<button onclick="revokeAccess('${email}')" class="text-rose-400 hover:text-rose-300 text-[10px] font-medium"><i class="fa-solid fa-user-minus mr-1"></i>Revocar</button>`
-                    }
-                </div>
-            `).join('');
-        }
-
-        function approveAccess(email) {
-            if (!authorizedEmails.includes(email)) {
-                authorizedEmails.push(email);
-            }
-            pendingRequests = pendingRequests.filter(req => req.email !== email);
-            saveAccessState();
-            renderAuthPanel();
-            renderShareModalUsers();
-            showToast(`Acceso autorizado para: ${email}`, 'success');
-        }
-
-        function denyAccess(email) {
-            pendingRequests = pendingRequests.filter(req => req.email !== email);
-            saveAccessState();
-            renderAuthPanel();
-            showToast(`Solicitud denegada para: ${email}`, 'info');
-        }
-
-        function revokeAccess(email) {
-            if (email === ADMIN_EMAIL) return;
-            authorizedEmails = authorizedEmails.filter(e => e !== email);
-            saveAccessState();
-            renderAuthPanel();
-            renderShareModalUsers();
-            showToast(`Acceso revocado para: ${email}`, 'warning');
-        }
-
-        function clearAllPendingRequests() {
-            pendingRequests = [];
-            saveAccessState();
-            renderAuthPanel();
-            showToast('Lista de solicitudes pendientes limpiada', 'info');
-        }
-
-        function sendDirectInvitation() {
-            const input = document.getElementById('invite-email-input');
-            const email = input.value.trim().toLowerCase();
-
-            if (!email || !email.includes('@')) {
-                showToast('Ingresa un correo válido para invitar', 'error');
-                return;
-            }
-
-            approveAccess(email);
-            input.value = '';
-            showToast(`Invitación y permiso otorgado a ${email}`, 'success');
-        }
-
-        function renderShareModalUsers() {
-            const container = document.getElementById('share-modal-users-list');
-            container.innerHTML = authorizedEmails.map(email => `
-                <div class="flex justify-between items-center p-2 rounded-lg bg-slate-900/60">
-                    <span class="text-slate-200"><i class="fa-solid fa-user ${email === ADMIN_EMAIL ? 'text-cyan-400' : 'text-purple-400'} mr-2"></i> ${email}</span>
-                    <span class="px-2 py-0.5 rounded ${email === ADMIN_EMAIL ? 'bg-cyan-950 text-cyan-400 font-bold' : 'bg-purple-950 text-purple-300'} text-[10px]">
-                        ${email === ADMIN_EMAIL ? 'Propietario' : 'Lector'}
-                    </span>
-                </div>
-            `).join('');
-        }
-
-        // Parse File Upload (xlsx/csv) - Modifica la base de datos y actualiza gráficos
-        function handleFileSelect(evt) {
-            if (currentUser.role !== 'admin') {
-                showToast('Solo los usuarios Admin pueden cargar archivos', 'error');
-                return;
-            }
-            const file = evt.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-                    // Parse Columns: A=Fecha, B=Demanda, C=Despacho, D=Diferencia, E=%Atencion, F=Tiendas
-                    const parsedData = [];
-                    for (let i = 1; i < json.length; i++) {
-                        const row = json[i];
-                        if (!row || row.length < 2) continue;
-
-                        let fecha = row[0] ? String(row[0]).trim() : `Día ${i}`;
-                        let demanda = parseInt(row[1]) || 0;
-                        let despacho = parseInt(row[2]) || 0;
-                        let diferencia = parseInt(row[3]) || Math.max(0, demanda - despacho);
-                        
-                        let atencionRaw = row[4];
-                        let atencion = 0;
-                        if (typeof atencionRaw === 'number') {
-                            atencion = atencionRaw > 1 ? atencionRaw / 100 : atencionRaw;
-                        } else if (typeof atencionRaw === 'string') {
-                            atencion = parseFloat(atencionRaw.replace('%', '')) / (atencionRaw.includes('%') ? 100 : 1);
-                        } else {
-                            atencion = demanda > 0 ? (despacho / demanda) : 0;
-                        }
-
-                        let tiendas = parseInt(row[5]) || 0;
-
-                        parsedData.push({
-                            fecha,
-                            demanda,
-                            despacho,
-                            diferencia,
-                            atencion: isNaN(atencion) ? 0 : atencion,
-                            tiendas
-                        });
+                    let fecha = row[0] ? String(row[0]).trim() : `Día ${i}`;
+                    let demanda = parseFloat(String(row[1]).replace(/[,.]/g, '')) || 0; 
+                    let despacho = parseFloat(String(row[2]).replace(/[,.]/g, '')) || 0;
+                    let diferencia = parseFloat(String(row[3]).replace(/[,.]/g, '')) || Math.max(0, demanda - despacho);
+                    
+                    let atencionRaw = row[4];
+                    let atencion = 0;
+                    if (typeof atencionRaw === 'string') {
+                        atencion = parseFloat(atencionRaw.replace('%', '').replace(',', '.')) / (atencionRaw.includes('%') ? 100 : 1);
+                    } else if (typeof atencionRaw === 'number') {
+                        atencion = atencionRaw > 1 ? atencionRaw / 100 : atencionRaw;
                     }
 
-                    if (parsedData.length === 0) {
-                        showToast('No se encontraron registros válidos en el archivo', 'error');
-                        return;
-                    }
+                    let tiendas = parseInt(row[5]) || 0;
 
-                    rawData = parsedData;
-                    document.getElementById('data-source-name').innerText = file.name;
-                    showToast(`Base de datos "${file.name}" cargada. Gráficos actualizados con ${rawData.length} registros`, 'success');
-                    applyFilters();
-
-                } catch (err) {
-                    console.error(err);
-                    showToast('Error al leer el archivo. Verifique el formato .xlsx o .csv', 'error');
+                    parsedData.push({ fecha, demanda, despacho, diferencia, atencion, tiendas });
                 }
-            };
-            reader.readAsArrayBuffer(file);
-        }
 
-        function resetToDefaultData() {
-            rawData = JSON.parse(JSON.stringify(DEFAULT_DATASET));
-            document.getElementById('data-source-name').innerText = "Dataset Precargado (PROMEDIO.xlsx)";
-            applyFilters();
-            showToast('Datos reestablecidos a la versión original', 'info');
-        }
-
-        // Filtering Logic
-        function applyFilters(shouldNotify = true) {
-            const startDate = document.getElementById('filter-date-start').value;
-            const endDate = document.getElementById('filter-date-end').value;
-
-            filteredData = rawData.filter(item => {
-                if (!startDate && !endDate) return true;
-                const parts = item.fecha.split('/');
-                let itemDate = parts.length === 3 ? new Date(parts[2], parts[1] - 1, parts[0]) : new Date(item.fecha);
-                if (isNaN(itemDate.getTime())) return true;
-
-                if (startDate && itemDate < new Date(startDate)) return false;
-                if (endDate && itemDate > new Date(endDate)) return false;
-                return true;
-            });
-
-            updateDashboard();
-            if (shouldNotify && (startDate || endDate)) {
-                showToast(`Filtros aplicados: ${filteredData.length} registros en el rango`, 'info');
+                if (parsedData.length > 0) {
+                    rawData = parsedData;
+                    filteredData = [...rawData];
+                    document.getElementById('data-source-name').innerText = "Base_Datos_Demanda_Limpia.csv";
+                    updateDashboard();
+                    showToast(`¡Datos cargados con éxito! (${rawData.length} registros)`, 'success');
+                } else {
+                    showToast('El archivo CSV está vacío', 'warning');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error al conectar con el archivo CSV en GitHub', 'error');
             }
         }
 
-        function clearDateFilter() {
-            document.getElementById('filter-date-start').value = '';
-            document.getElementById('filter-date-end').value = '';
-            applyFilters();
-        }
-
-        // Main Dashboard Update
         function updateDashboard() {
             updateKPIs();
             updateCharts();
@@ -958,15 +215,11 @@
             document.getElementById('data-count-badge').innerText = `${filteredData.length} Registros`;
         }
 
-        // KPI Calculation
         function updateKPIs() {
             const totalDemanda = filteredData.reduce((acc, curr) => acc + curr.demanda, 0);
             const totalDespacho = filteredData.reduce((acc, curr) => acc + curr.despacho, 0);
             const totalDiferencia = filteredData.reduce((acc, curr) => acc + curr.diferencia, 0);
-            const avgTiendas = filteredData.length > 0 
-                ? Math.round(filteredData.reduce((acc, curr) => acc + curr.tiendas, 0) / filteredData.length) 
-                : 0;
-
+            const avgTiendas = filteredData.length > 0 ? Math.round(filteredData.reduce((acc, curr) => acc + curr.tiendas, 0) / filteredData.length) : 0;
             const efecGlobal = totalDemanda > 0 ? (totalDespacho / totalDemanda) : 0;
             const efecPercent = (efecGlobal * 100).toFixed(2);
 
@@ -975,417 +228,60 @@
             document.getElementById('kpi-diferencia').innerText = totalDiferencia.toLocaleString('es-ES');
             document.getElementById('kpi-tiendas').innerText = avgTiendas.toLocaleString('es-ES');
             document.getElementById('kpi-atencion').innerText = `${efecPercent}%`;
-
-            // Dynamic Badge Status for KPI % Attention
-            const badge = document.getElementById('kpi-atencion-badge');
-
-            if (efecGlobal >= 0.70) {
-                badge.innerText = "Excelente";
-                badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold border bg-emerald-950/80 text-emerald-400 border-emerald-500/50";
-            } else if (efecGlobal >= 0.50) {
-                badge.innerText = "Aceptable";
-                badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold border bg-amber-950/80 text-amber-400 border-amber-500/50";
-            } else {
-                badge.innerText = "Crítico";
-                badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold border bg-rose-950/80 text-rose-400 border-rose-500/50";
-            }
-
-            // Update Gauge Texts
             document.getElementById('gauge-percent-text').innerText = `${efecPercent}%`;
-            const deltaMeta = (efecGlobal * 100 - 80).toFixed(2);
-            const deltaElem = document.getElementById('gauge-target-delta');
-            if (deltaMeta >= 0) {
-                deltaElem.innerText = `+${deltaMeta}%`;
-                deltaElem.className = "font-bold text-emerald-400";
-            } else {
-                deltaElem.innerText = `${deltaMeta}%`;
-                deltaElem.className = "font-bold text-rose-400";
-            }
-            document.getElementById('gauge-status-text').innerText = efecGlobal >= 0.8 ? "Meta Alcanzada" : "Bajo la Meta";
         }
 
-        // Initialize Chart Instances
         function initCharts() {
-            // Chart 1: Demanda vs Despacho + % Atencion
-            const ctx1 = document.getElementById('chart-demanda-despacho').getContext('2d');
-            chartDemandaDespacho = new Chart(ctx1, {
-                type: 'bar',
-                data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-                        y: { 
-                            type: 'linear', position: 'left',
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#94A3B8', font: { size: 10 } },
-                            title: { display: true, text: 'Unidades', color: '#64748B', font: { size: 10 } }
-                        },
-                        y1: {
-                            type: 'linear', position: 'right', min: 0, max: 100,
-                            grid: { drawOnChartArea: false },
-                            ticks: { color: NEON_PURPLE, callback: value => value + '%', font: { size: 10 } },
-                            title: { display: true, text: '% Atención', color: NEON_PURPLE, font: { size: 10 } }
-                        }
-                    },
-                    plugins: {
-                        legend: { labels: { color: '#E2E8F0', font: { size: 11 } } }
-                    }
-                }
+            chartDemandaDespacho = new Chart(document.getElementById('chart-demanda-despacho').getContext('2d'), {
+                type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false }
             });
-
-            // Chart 5: Semi-circular Gauge
-            const ctxGauge = document.getElementById('chart-gauge').getContext('2d');
-            chartGauge = new Chart(ctxGauge, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Cumplimiento', 'Restante'],
-                    datasets: [{
-                        data: [0, 100],
-                        backgroundColor: [NEON_PURPLE, 'rgba(51, 65, 85, 0.4)'],
-                        borderWidth: 0,
-                        circumference: 180,
-                        rotation: 270,
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
-                }
-            });
-
-            // Chart 2: Stacked Areas
-            const ctx2 = document.getElementById('chart-areas-apiladas').getContext('2d');
-            chartAreas = new Chart(ctx2, {
-                type: 'line',
-                data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-                        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } }
-                    },
-                    plugins: {
-                        legend: { labels: { color: '#E2E8F0', font: { size: 11 } } }
-                    }
-                }
-            });
-
-            // Chart 3: Scatter Plot (Tiendas vs %Atencion)
-            const ctx3 = document.getElementById('chart-scatter').getContext('2d');
-            chartScatter = new Chart(ctx3, {
-                type: 'scatter',
-                data: { datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { 
-                            title: { display: true, text: 'Tiendas Atendidas', color: '#94A3B8', font: { size: 10 } },
-                            grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } 
-                        },
-                        y: { 
-                            title: { display: true, text: '% Atención', color: '#94A3B8', font: { size: 10 } },
-                            grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } },
-                            min: 0, max: 100
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    return `Tiendas: ${ctx.raw.x}, % Atención: ${ctx.raw.y}%`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Chart 4: Cobertura Tiendas Tendencia
-            const ctx4 = document.getElementById('chart-tendencia-tiendas').getContext('2d');
-            chartTendencia = new Chart(ctx4, {
-                type: 'line',
-                data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } }
-                    },
-                    plugins: {
-                        legend: { labels: { color: '#E2E8F0', font: { size: 11 } } }
-                    }
-                }
+            chartGauge = new Chart(document.getElementById('chart-gauge').getContext('2d'), {
+                type: 'doughnut', data: { labels: ['Cumplimiento', 'Restante'], datasets: [{ data: [0, 100], backgroundColor: ['#9D00FF', '#334155'], circumference: 180, rotation: 270 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
             });
         }
 
-        // Refresh Chart Data
         function updateCharts() {
             const labels = filteredData.map(d => d.fecha);
-            const demandaArr = filteredData.map(d => d.demanda);
-            const despachoArr = filteredData.map(d => d.despacho);
-            const diferenciaArr = filteredData.map(d => d.diferencia);
-            const atencionArr = filteredData.map(d => (d.atencion * 100).toFixed(1));
-            const tiendasArr = filteredData.map(d => d.tiendas);
-
-            // Chart 1 Update
             chartDemandaDespacho.data.labels = labels;
-            chartDemandaDespacho.data.datasets = [
-                {
-                    label: 'Demanda',
-                    data: demandaArr,
-                    backgroundColor: 'rgba(0, 240, 255, 0.65)',
-                    borderColor: NEON_BLUE,
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Despacho',
-                    data: despachoArr,
-                    backgroundColor: 'rgba(0, 255, 102, 0.65)',
-                    borderColor: NEON_GREEN,
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    yAxisID: 'y'
-                },
-                {
-                    label: '% Atención',
-                    data: atencionArr,
-                    type: 'line',
-                    borderColor: NEON_PURPLE,
-                    backgroundColor: NEON_PURPLE,
-                    borderWidth: 3,
-                    tension: 0.3,
-                    pointRadius: 3,
-                    yAxisID: 'y1'
-                }
+            chartDemansDespachoData = [
+                { label: 'Demanda', data: filteredData.map(d => d.demanda), backgroundColor: '#00F0FF' },
+                { label: 'Despachada', data: filteredData.map(d => d.despacho), backgroundColor: '#00FF66' }
             ];
+            chartDemandaDespacho.data.datasets = chartDemansDespachoData;
             chartDemandaDespacho.update();
 
-            // Chart Gauge Update
-            const totalDem = demandaArr.reduce((a, b) => a + b, 0);
-            const totalDesp = despachoArr.reduce((a, b) => a + b, 0);
+            const totalDem = filteredData.reduce((a, b) => a + b.demanda, 0);
+            const totalDesp = filteredData.reduce((a, b) => a + b.despacho, 0);
             const efec = totalDem > 0 ? (totalDesp / totalDem) * 100 : 0;
             chartGauge.data.datasets[0].data = [efec, Math.max(0, 100 - efec)];
-            chartGauge.data.datasets[0].backgroundColor = [
-                efec >= 80 ? NEON_GREEN : (efec >= 50 ? NEON_YELLOW : NEON_RED),
-                'rgba(51, 65, 85, 0.3)'
-            ];
             chartGauge.update();
-
-            // Chart 2 Stacked Areas
-            chartAreas.data.labels = labels;
-            chartAreas.data.datasets = [
-                {
-                    label: 'Despachado (Efectivo)',
-                    data: despachoArr,
-                    fill: true,
-                    backgroundColor: 'rgba(0, 255, 102, 0.3)',
-                    borderColor: NEON_GREEN,
-                    tension: 0.3
-                },
-                {
-                    label: 'Diferencia (Brecha)',
-                    data: diferenciaArr,
-                    fill: true,
-                    backgroundColor: 'rgba(255, 51, 102, 0.3)',
-                    borderColor: NEON_RED,
-                    tension: 0.3
-                }
-            ];
-            chartAreas.update();
-
-            // Chart 3 Scatter Plot
-            const scatterPoints = filteredData.map(d => ({ x: d.tiendas, y: (d.atencion * 100).toFixed(1) }));
-            chartScatter.data.datasets = [{
-                label: 'Días Operativos',
-                data: scatterPoints,
-                backgroundColor: NEON_YELLOW,
-                borderColor: '#FFFFFF',
-                borderWidth: 1,
-                pointRadius: 6,
-                pointHoverRadius: 8
-            }];
-            chartScatter.update();
-
-            // Chart 4 Tendencia + Linea Promedio
-            const avgTiendas = tiendasArr.length > 0 ? (tiendasArr.reduce((a, b) => a + b, 0) / tiendasArr.length) : 0;
-            const avgLine = Array(labels.length).fill(avgTiendas.toFixed(1));
-
-            chartTendencia.data.labels = labels;
-            chartTendencia.data.datasets = [
-                {
-                    label: 'Tiendas Atendidas',
-                    data: tiendasArr,
-                    borderColor: NEON_YELLOW,
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    fill: true,
-                    tension: 0.2,
-                    borderWidth: 2,
-                    pointRadius: 4
-                },
-                {
-                    label: `Promedio (${avgTiendas.toFixed(0)})`,
-                    data: avgLine,
-                    borderColor: 'rgba(255, 255, 255, 0.6)',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    fill: false
-                }
-            ];
-            chartTendencia.update();
-        }
-
-        // Sort & Render Table
-        function sortTable(col) {
-            if (sortCol === col) {
-                sortAsc = !sortAsc;
-            } else {
-                sortCol = col;
-                sortAsc = true;
-            }
-            renderTable();
         }
 
         function renderTable() {
             const tbody = document.getElementById('table-body');
-            const searchVal = document.getElementById('table-search').value.toLowerCase();
-
-            let dataToRender = filteredData.filter(d => d.fecha.toLowerCase().includes(searchVal));
-
-            dataToRender.sort((a, b) => {
-                let valA = a[sortCol];
-                let valB = b[sortCol];
-
-                if (sortCol === 'fecha') {
-                    const pA = a.fecha.split('/');
-                    const pB = b.fecha.split('/');
-                    valA = pA.length === 3 ? new Date(pA[2], pA[1]-1, pA[0]) : new Date(a.fecha);
-                    valB = pB.length === 3 ? new Date(pB[2], pB[1]-1, pB[0]) : new Date(b.fecha);
-                }
-
-                if (valA < valB) return sortAsc ? -1 : 1;
-                if (valA > valB) return sortAsc ? 1 : -1;
-                return 0;
-            });
-
             tbody.innerHTML = '';
-
-            dataToRender.forEach(row => {
+            filteredData.forEach(row => {
                 const tr = document.createElement('tr');
-                const atencionPct = (row.atencion * 100).toFixed(2);
-                
-                // Conditional Formatting
-                if (row.atencion < 0.50) {
-                    tr.className = "bg-rose-950/30 hover:bg-rose-900/40 transition-colors border-l-4 border-rose-500";
-                } else if (row.atencion < 0.70) {
-                    tr.className = "bg-amber-950/20 hover:bg-amber-900/30 transition-colors border-l-4 border-amber-500/50";
-                } else {
-                    tr.className = "hover:bg-slate-800/50 transition-colors border-l-4 border-transparent";
-                }
-
-                let badgeHtml = '';
-                if (row.atencion >= 0.70) {
-                    badgeHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">ÓPTIMO</span>';
-                } else if (row.atencion >= 0.50) {
-                    badgeHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-500/30">REGULAR</span>';
-                } else {
-                    badgeHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-400 border border-rose-500/30">CRÍTICO</span>';
-                }
-
+                tr.className = "hover:bg-slate-800/50";
                 tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-200">${row.fecha}</td>
+                    <td class="px-4 py-3">${row.fecha}</td>
                     <td class="px-4 py-3 text-right text-cyan-300">${row.demanda.toLocaleString('es-ES')}</td>
                     <td class="px-4 py-3 text-right text-emerald-300">${row.despacho.toLocaleString('es-ES')}</td>
                     <td class="px-4 py-3 text-right text-rose-300">${row.diferencia.toLocaleString('es-ES')}</td>
-                    <td class="px-4 py-3 text-right font-bold ${row.atencion < 0.5 ? 'text-rose-400' : 'text-purple-300'}">${atencionPct}%</td>
+                    <td class="px-4 py-3 text-right font-bold text-purple-300">${(row.atencion * 100).toFixed(2)}%</td>
                     <td class="px-4 py-3 text-right text-amber-300">${row.tiendas}</td>
-                    <td class="px-4 py-3 text-center">${badgeHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
-
-            document.getElementById('table-record-count').innerText = `Mostrando ${dataToRender.length} de ${filteredData.length} registros`;
         }
 
-        // Export Table Data to CSV
-        function exportTableToCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,Fecha,Demanda,Despacho,Diferencia,Porcentaje_Atencion,Tiendas_Atendidas\n";
-            filteredData.forEach(row => {
-                csvContent += `${row.fecha},${row.demanda},${row.despacho},${row.diferencia},${(row.atencion*100).toFixed(2)}%,${row.tiendas}\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Reporte_Logistica_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('Reporte CSV descargado correctamente', 'success');
-        }
-
-        // Share Modal Controls
-        function openShareModal() {
-            renderShareModalUsers();
-            document.getElementById('share-modal').classList.remove('hidden');
-        }
-        function closeShareModal() {
-            document.getElementById('share-modal').classList.add('hidden');
-        }
-        function copyShareLink() {
-            const copyText = document.getElementById("share-link-input");
-            copyText.select();
-            document.execCommand("copy");
-            showToast('Enlace de Lector copiado al portapapeles', 'success');
-        }
-
-        // Toast Notification System
-        function showToast(message, type = 'info') {
+        function showToast(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
-            let bgClass = "bg-slate-800 border-slate-700 text-slate-200";
-            let icon = "fa-circle-info text-cyan-400";
-
-            if (type === 'success') {
-                bgClass = "bg-emerald-950/90 border-emerald-500/50 text-emerald-200";
-                icon = "fa-circle-check text-emerald-400";
-            } else if (type === 'error') {
-                bgClass = "bg-rose-950/90 border-rose-500/50 text-rose-200";
-                icon = "fa-triangle-exclamation text-rose-400";
-            } else if (type === 'warning') {
-                bgClass = "bg-amber-950/90 border-amber-500/50 text-amber-200";
-                icon = "fa-triangle-exclamation text-amber-400";
-            }
-
-            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border ${bgClass} backdrop-blur-md shadow-xl text-xs transition-all transform translate-y-2 opacity-0 duration-300`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i> <span>${message}</span>`;
-
+            toast.className = `px-4 py-2 rounded-xl text-xs bg-slate-800 text-white shadow-lg border border-slate-700`;
+            toast.innerText = msg;
             container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+            setTimeout(() => toast.remove(), 3500);
         }
     </script>
 </body>
